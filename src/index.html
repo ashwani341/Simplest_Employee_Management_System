@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome</title>
+  <script>
+    (function () {
+
+      if (!window.navigator) return
+
+      if (!window.navigator.onLine) return alert('plz connect to the internet')
+
+    })();
+  </script>
+  <!-- Bootstrap CDN ----------------------------------------------------------------------------------------------------->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
+
+  <!-- some custom styles ----------------------------------------------------------------------------------------------------->
+  <style>
+    #edit_emp_div {
+      display: none;
+    }
+    .icon-btn {
+      cursor: pointer;
+      display: inline-block;
+    }
+  </style>
+
+
+  <!-- JQuery CDN ----------------------------------------------------------------------------------------------------->
+  <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+  <script>
+    function generateTableData() {
+      const api = 'http://localhost:5000'
+
+      $.get(`${api}/employees`, res => {
+        $('table>tbody').html('') // cleaning previously populated data
+
+        res.data.forEach(emp => {
+
+          $('table>tbody').append(`
+            <tr>
+              <td>${emp.id}</td>
+              <td>${emp.name}</td>
+              <td>${emp.address}</td>
+              <td>${emp.salary}</td>
+              <td>
+                <i class="bi bi-pencil-square text-primary icon-btn" onClick='onEdit(event)'></i>
+                |
+                <i class="bi bi-trash text-danger icon-btn" onClick='onDelete(event)'></i>
+              </td>
+            </tr>
+          `)
+        });
+      })
+    }
+
+
+    function onDelete(e) {
+
+      if (!confirm('Do you want to delete this entry?')) return
+
+      // extracting the id from the table
+      const id = e.target.parentNode.parentNode.childNodes[1].textContent
+
+      // make a delete call to the back-end
+      $.ajax({
+        url: `/employees/${id}`,
+        method: 'delete',
+        success: function (res) {
+          console.log(res)
+        }
+      })
+
+      // re-populate the table
+      generateTableData()
+
+    }
+
+
+    function onEdit(e) {
+      // showing the hidden editing form
+      $('#edit_emp_div').slideDown(200)
+
+      // extracting the id from the table
+      const tr = e.target.parentNode.parentNode
+      const id = tr.childNodes[1].textContent
+      const name = tr.childNodes[3].textContent
+      const address = tr.childNodes[5].textContent
+      const salary = tr.childNodes[7].textContent
+
+      $('#edit_id').val(id)
+      $('#edit_name').val(name)
+      $('#edit_address').val(address)
+      $('#edit_salary').val(salary)
+    }
+
+
+    $().ready(init)
+    function init() {
+      generateTableData()
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container-lg text-bg-light min-vh-100">
+    <div class="row">
+      <h1 class="text-center p-5 text-bg-primary">Employee Management System</h1>
+    </div>
+    <div class="row">
+      <div class="col-12 col-lg-8">
+        <h3 class="text-bg-info p-2 mb-4">Employees List:</h3>
+        <table class="table table-striped border">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Salary</th>
+              <th>Options</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <!-- form for new employee ----------------------------------------------------------------------------------------------------->
+      <div class="col-12 col-lg-4">
+        <div class="mb-5">
+          <h3 class="text-bg-success p-2 mb-4">New Employee:</h3>
+          <form action="#" method="post">
+            <div class="mb-3">
+              <input type="number" name="id" id="new_id" placeholder="Id" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="name" id="new_name" placeholder="Name" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="address" id="new_address" placeholder="Address" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="number" name="salary" id="new_salary" placeholder="Salary" class="form-control" />
+            </div>
+            <input type="submit" value="Add" class="w-100 btn btn-outline-primary" />
+          </form>
+        </div>
+        <div id="edit_emp_div">
+          <h3 class="text-bg-warning p-2 mb-4">Edit Employee:</h3>
+          <form action="#" method="post">
+            <div class="mb-3">
+              <input type="number" name="id" id="edit_id" placeholder="Id" class="form-control" disabled />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="name" id="edit_name" placeholder="Name" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="address" id="edit_address" placeholder="Address" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="number" name="salary" id="edit_salary" placeholder="Salary" class="form-control" />
+            </div>
+            <input type="submit" value="Update" class="w-100 btn btn-outline-primary" />
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- jQuery script ----------------------------------------------------------------------------------------------------->
+  <script>
+    $().ready(onReady);
+    function onReady() {
+
+      // function for adding a new employee
+      $('form').first().submit(function (e) {
+        e.preventDefault()
+
+        // take the input values and send to the back-end
+        const emp = {
+          id: $(this[0]).val(),
+          name: $(this[1]).val(),
+          address: $(this[2]).val(),
+          salary: $(this[3]).val()
+        }
+
+        // making post request to the back-end with emp{}
+        $.post('/newEmployee', emp, res => {
+          generateTableData()
+
+          // resetting the input values to blank
+          $(this[0]).val('')
+          $(this[1]).val('')
+          $(this[2]).val('')
+          $(this[3]).val('')
+        })
+      })
+      
+      
+      // function for updating an existing employee
+      $('form').eq(1).submit(function (e) {
+        e.preventDefault()
+        console.log('update')
+
+        // take the input values and send to the back-end
+        const emp = {
+          id: $(this[0]).val(),
+          name: $(this[1]).val(),
+          address: $(this[2]).val(),
+          salary: $(this[3]).val()
+        }
+
+        // making post request to the back-end with emp{}
+        $.ajax({
+          url: '/updateEmployee',
+          method: 'PUT',
+          data: emp,
+          success: res => {
+            generateTableData()
+
+            // resetting the input values to blank
+            $(this[0]).val('')
+            $(this[1]).val('')
+            $(this[2]).val('')
+            $(this[3]).val('')
+
+            // hiding the editing form
+            $('#edit_emp_div').slideUp()
+          }
+        })
+      })
+
+    }
+  </script>
+</body>
+
+</html>
